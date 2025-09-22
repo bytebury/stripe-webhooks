@@ -40,7 +40,7 @@ impl StripeListener {
     /// Process a Stripe webhook payload, verifying its signature and parsing the event.
     /// Returns a `StripeEvent` enum variant on success, or an error if verification or parsing fails.
     pub fn process(&self, headers: &HeaderMap, payload: &str) -> Result<StripeEvent> {
-        if !self.verify(headers, payload).is_none_or(|x| !x) {
+        if !self.verify(headers, payload).is_none_or(|x| x) {
             return Err(anyhow!("signature verification failed"));
         }
 
