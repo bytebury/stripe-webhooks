@@ -7,6 +7,7 @@ use http::HeaderMap;
 use serde::Deserialize;
 use serde_json::Value;
 use sha2::Sha256;
+use std::env;
 use subtle::ConstantTimeEq;
 
 type HmacSha256 = Hmac<Sha256>;
@@ -33,8 +34,16 @@ pub struct StripeListener {
     secret: String,
 }
 impl StripeListener {
+    /// Creates a `StripeListener` from the given secret.
     pub fn new(secret: String) -> Self {
         Self { secret }
+    }
+
+    /// Creates a `StripeListener` from the environment variables.
+    /// This assumes that you already have an environment variable called `"STRIPE_WEBHOOK_SEC"`.
+    /// If you do not, then this will panic.
+    pub fn from_env() -> Self {
+        Self::new(env::var("STRIPE_WEBHOOK_SEC").expect("STRIPE_WEBHOOK_SEC is not defined"))
     }
 
     /// Process a Stripe webhook payload, verifying its signature and parsing the event.
@@ -68,7 +77,7 @@ impl StripeListener {
     fn verify_signature(&self, signature_header: &str, payload: &str) -> bool {
         let (timestamp, signature_hex) = match self.parse_signature(signature_header) {
             Some(x) => x,
-            None => return false,
+            _ => return false,
         };
         let signed_payload = format!("{timestamp}.{payload}");
 

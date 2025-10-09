@@ -4,25 +4,25 @@ Listens to basic webhooks from Stripe. Particularly those that are common for su
 ## Usage
 ```rs
 pub async handler(headers: HeaderMap, body: String) {
-    let stripe_events = StripeListener::new(env::var("STRIPE_WEBHOOK_SEC").unwrap());
-    let stripe_event = match stripe_events::process(&headers, &body) {
-        Ok(event) => event,
+    let stripe_events = StripeListener::from_env();
+    let stripe_event = match stripe_events.process(&headers, &body) {
+        Ok(event) => {
+          match event {
+              StripeEvent::CheckoutSessionCompleted(ev) => {
+                  println!("Checkout session completed: {:?}", ev);
+              },
+              StripeEvent::CustomerSubscriptionDeleted(obj) => {
+                  println!("Customer subscription deleted: {:?}", obj);
+              }
+              StripeEvent::Unknown(obj) => {
+                  println!("Unknown Stripe event: {:?}", obj);
+              }
+          }
+        },
         Err(e) => {
             eprintln!("Failed to process webhook: {:?}", e)
             return;
         };
     };
-
-    match stripe_event {
-        StripeEvent::CheckoutSessionCompleted(ev) => {
-            println!("Checkout session completed: {:?}", ev);
-        },
-        StripeEvent::CustomerSubscriptionDeleted(obj) => {
-            println!("Customer subscription deleted: {:?}", obj);
-        }
-        StripeEvent::Unknown(obj) => {
-            println!("Unknown Stripe event: {:?}", obj);
-        }
-    }
 }
 ```
