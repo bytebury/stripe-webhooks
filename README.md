@@ -17,11 +17,11 @@ pub async handler(headers: HeaderMap, body: String) {
         StripeEvent::CheckoutSessionCompleted(ev) => {
             println!("Checkout session completed: {:?}", ev);
         },
-        StripeEvent::CustomerSubscriptionDeleted(obj) => {
-            println!("Customer subscription deleted: {:?}", obj);
+        StripeEvent::InvoicePaymentFailed(ev) | StripeEvent::CustomerSubscriptionDeleted(ev) => {
+            println!("Customer subscription deleted: {:?}", ev);
         }
-        StripeEvent::Unknown(obj) => {
-            println!("Unknown Stripe event: {:?}", obj);
+        StripeEvent::Unknown(ev) => {
+            println!("Unknown Stripe event: {:?}", ev);
         }
     }
 }
