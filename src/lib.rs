@@ -13,8 +13,13 @@ use subtle::ConstantTimeEq;
 type HmacSha256 = Hmac<Sha256>;
 
 pub enum StripeEvent {
+    /// Customer has completed a payment
     CheckoutSessionCompleted(Value),
+    /// Customer cancelled their subscription
     CustomerSubscriptionDeleted(Value),
+    /// An invoice payment failed (Subscription Renewals)
+    InvoicePaymentFailed(Value),
+    /// All other Stripe Events
     Unknown(Value),
 }
 
@@ -63,6 +68,7 @@ impl StripeListener {
             "customer.subscription.deleted" => {
                 Ok(StripeEvent::CustomerSubscriptionDeleted(event.data.object))
             }
+            "invoice.payment_failed" => Ok(StripeEvent::InvoicePaymentFailed(event.data.object)),
             _ => Ok(StripeEvent::Unknown(event.data.object)),
         }
     }
